@@ -1,15 +1,15 @@
+--this is the later product, may error.
+-- obfuscated script is the main thing. this is a failsafe.
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 
---hello my guy :D
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 520, 0, 320)
 frame.Position = UDim2.new(0.5, -260, 0.5, -160)
 frame.BackgroundColor3 = Color3.new(0,0,0)
-
 
 local output = Instance.new("TextLabel", frame)
 output.Size = UDim2.new(1,-10,1,-40)
@@ -23,7 +23,6 @@ output.TextYAlignment = Enum.TextYAlignment.Top
 output.TextWrapped = true
 output.Text = ""
 
--- script by joyfulpizza
 local input = Instance.new("TextBox", frame)
 input.Size = UDim2.new(1,-10,0,30)
 input.Position = UDim2.new(0,5,1,-35)
@@ -33,15 +32,6 @@ input.TextSize = 16
 input.TextColor3 = Color3.new(1,1,1)
 input.ClearTextOnFocus = false
 
--- Copying my scripts?
-local showCursor = true
-task.spawn(function()
-	while true do
-		showCursor = not showCursor
-		task.wait(0.5)
-	end
-end)
-
 local function prompt()
 	return "C:\\Users\\NUL\\"..player.Name.."> "
 end
@@ -50,6 +40,13 @@ local function append(text)
 	output.Text = output.Text .. "\n" .. text
 end
 
+input.Text = prompt()
+
+input:GetPropertyChangedSignal("Text"):Connect(function()
+	if not input.Text:find(prompt(), 1, true) then
+		input.Text = prompt()
+	end
+end)
 
 local function getUSTime()
 	return os.date("US timeline - %H:%M:%S", os.time() - (60*60*13))
@@ -58,7 +55,6 @@ end
 local function getLocalTime()
 	return os.date("%Z timeline - %H:%M:%S")
 end
-
 
 local highlights = {}
 local healthTags = {}
@@ -70,19 +66,16 @@ local function highlightPlayers(showHealth)
 			h.FillColor = Color3.new(1,0,0)
 			h.Parent = plr.Character
 			table.insert(highlights, h)
-
 			if showHealth then
 				local bill = Instance.new("BillboardGui", plr.Character)
 				bill.Size = UDim2.new(0,100,0,40)
 				bill.AlwaysOnTop = true
-				
 				local txt = Instance.new("TextLabel", bill)
 				txt.Size = UDim2.new(1,0,1,0)
 				txt.BackgroundTransparency = 1
 				txt.TextColor3 = Color3.new(1,0,0)
 				txt.Font = Enum.Font.Code
 				txt.Text = "HP: "..plr.Character:FindFirstChild("Humanoid").Health
-				
 				table.insert(healthTags, bill)
 			end
 		end
@@ -96,14 +89,12 @@ local function clearHighlights()
 	healthTags = {}
 end
 
--- wyd
 local airjump = false
 game:GetService("UserInputService").JumpRequest:Connect(function()
 	if airjump then
 		humanoid:ChangeState("Jumping")
 	end
 end)
-
 
 local noclip = false
 game:GetService("RunService").Stepped:Connect(function()
@@ -115,7 +106,6 @@ game:GetService("RunService").Stepped:Connect(function()
 		end
 	end
 end)
-
 
 local predicting = false
 local predictionLines = {}
@@ -141,7 +131,6 @@ local function startPrediction()
 					local futurePos = root.Position + root.Velocity * 1
 					local line = createLine(root.Position, futurePos)
 					table.insert(predictionLines, line)
-
 					task.delay(0.5, function()
 						if line then line:Destroy() end
 					end)
@@ -160,8 +149,7 @@ local function stopPrediction()
 	predictionLines = {}
 end
 
-
-local draggingEnabled = true
+local draggingEnabled = false
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -170,7 +158,6 @@ frame.InputBegan:Connect(function(inputObj)
 		dragging = true
 		dragStart = inputObj.Position
 		startPos = frame.Position
-
 		inputObj.Changed:Connect(function()
 			if inputObj.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -197,114 +184,78 @@ game:GetService("UserInputService").InputChanged:Connect(function(inputObj)
 	end
 end)
 
--- dont touch this or it breaks.
 local function runCommand(cmd)
-
-	if cmd == "-c -h" then
-		append("Loaded commands.")
-
+	if cmd == ">>help" then
+		append("Commands loaded.")
 	elseif cmd == "-h //" then
 		highlightPlayers(false)
 		append("Highlight enabled.")
-
 	elseif cmd == "-h /h" then
 		highlightPlayers(true)
 		append("Highlight + health enabled.")
-
 	elseif cmd == "-e -h--" then
 		clearHighlights()
 		append("Highlight disabled.")
-
 	elseif cmd:match("%-s %-%-(%d+)&") then
 		local num = tonumber(cmd:match("(%d+)"))
 		humanoid.WalkSpeed = num
 		append("Speed set: "..num)
-
 	elseif cmd == "-s --re" then
 		humanoid.WalkSpeed = 16
 		append("Speed reset.")
-
 	elseif cmd:match("%-j %-%-(%d+)&") then
 		local num = tonumber(cmd:match("(%d+)"))
 		humanoid.JumpPower = num
 		append("Jump set: "..num)
-
 	elseif cmd == "-j --re" then
 		humanoid.JumpPower = 50
 		append("Jump reset.")
-
 	elseif cmd == "-airjump--/" then
 		airjump = true
 		append("Airjump enabled.")
-
 	elseif cmd == "--ncL" then
 		noclip = true
 		append("Noclip enabled.")
-
 	elseif cmd == "--ncL--re" then
 		noclip = false
 		append("Noclip disabled.")
-
 	elseif cmd == "-Sp" then
 		local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
 		append("Ping: "..ping)
-
 	elseif cmd == "-te.." then
 		for _, t in pairs(game:GetService("Teams"):GetChildren()) do
 			append("Team: "..t.Name)
 		end
-
 	elseif cmd == "-watch-t" then
 		append(getUSTime())
-
 	elseif cmd == "-watch-t-y" then
 		append(getLocalTime())
-
 	elseif cmd == "-cors watch/" then
 		startPrediction()
 		append("Prediction ON")
-
 	elseif cmd == "-cors /" then
 		stopPrediction()
 		append("Prediction OFF")
-
 	elseif cmd == "-d -on" then
 		draggingEnabled = true
 		append("Dragging ON")
-
 	elseif cmd == "-d -off" then
 		draggingEnabled = false
 		append("Dragging OFF")
-
 	elseif cmd == "--/clearterminal" then
 		output.Text = ""
-
 	elseif cmd == "--{}" then
 		player:Kick("Error!(js, python)")
-
 	else
 		append("Unknown command.")
 	end
 end
 
-
 input.FocusLost:Connect(function(enter)
 	if enter then
-		local text = input.Text:gsub(prompt(), "")
+		local text = input.Text:sub(#prompt() + 1)
 		append(prompt() .. text)
 		runCommand(text)
-		input.Text = ""
-	end
-end)
-
-task.spawn(function()
-	while true do
-		local base = input.Text:gsub("_","")
-		if showCursor then
-			input.Text = prompt() .. base .. "_"
-		else
-			input.Text = prompt() .. base
-		end
-		task.wait(0.1)
+		input.Text = prompt()
 	end
 end)
