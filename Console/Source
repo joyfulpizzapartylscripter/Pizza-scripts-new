@@ -1,6 +1,6 @@
---i made this just for fun
---you can take it
---nameless admin is better than this.
+--made it for fun
+--have the source if you need
+
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -34,17 +34,27 @@ topbar.Text = "Roblox Terminal v2.0"
 topbar.TextColor3 = Color3.fromRGB(0,255,0)
 topbar.TextSize = 18
 
+local scroll = Instance.new("ScrollingFrame")
+scroll.Parent = frame
+scroll.Position = UDim2.new(0,8,0,35)
+scroll.Size = UDim2.new(1,-16,1,-75)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+scroll.ScrollBarThickness = 6
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
 local output = Instance.new("TextLabel")
-output.Parent = frame
-output.Position = UDim2.new(0,8,0,35)
-output.Size = UDim2.new(1,-16,1,-75)
+output.Parent = scroll
+output.Size = UDim2.new(1,-5,0,0)
+output.AutomaticSize = Enum.AutomaticSize.Y
 output.BackgroundTransparency = 1
 output.Font = Enum.Font.Code
 output.TextXAlignment = Enum.TextXAlignment.Left
 output.TextYAlignment = Enum.TextYAlignment.Top
 output.TextColor3 = Color3.fromRGB(0,255,0)
 output.TextSize = 16
-output.TextWrapped = false
+output.TextWrapped = true
 output.RichText = false
 output.Text = [[
 Microsoft Windows [Version 11.0.22631.1]
@@ -63,12 +73,7 @@ input.Font = Enum.Font.Code
 input.TextColor3 = Color3.fromRGB(255,255,255)
 input.TextSize = 16
 input.ClearTextOnFocus = false
-
-local function prompt()
-	return ""
-end
-
-input.Text = prompt()
+input.Text = ""
 
 local function append(txt,isCommand)
 	if isCommand then
@@ -76,6 +81,10 @@ local function append(txt,isCommand)
 	else
 		output.Text = output.Text .. "\n" .. txt
 	end
+
+	task.wait()
+
+	scroll.CanvasPosition = Vector2.new(0,999999)
 end
 
 local airjump = false
