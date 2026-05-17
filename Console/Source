@@ -1,105 +1,106 @@
---this is the later product, may error.
--- obfuscated script is the main thing. this is a failsafe.
-local player = game.Players.LocalPlayer
+--i made this just for fun
+--you can take it
+--nameless admin is better than this.
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Stats = game:GetService("Stats")
+
+local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
+gui.Name = "Terminal"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 520, 0, 320)
-frame.Position = UDim2.new(0.5, -260, 0.5, -160)
-frame.BackgroundColor3 = Color3.new(0,0,0)
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.new(0,700,0,420)
+frame.Position = UDim2.new(0.5,-350,0.5,-210)
+frame.BackgroundColor3 = Color3.fromRGB(12,12,12)
+frame.BorderSizePixel = 0
 
-local output = Instance.new("TextLabel", frame)
-output.Size = UDim2.new(1,-10,1,-40)
-output.Position = UDim2.new(0,5,0,5)
+local topbar = Instance.new("TextLabel")
+topbar.Parent = frame
+topbar.Size = UDim2.new(1,0,0,28)
+topbar.BackgroundColor3 = Color3.fromRGB(20,20,20)
+topbar.BorderSizePixel = 0
+topbar.Font = Enum.Font.Code
+topbar.Text = "Roblox Terminal v2.0"
+topbar.TextColor3 = Color3.fromRGB(0,255,0)
+topbar.TextSize = 18
+
+local output = Instance.new("TextLabel")
+output.Parent = frame
+output.Position = UDim2.new(0,8,0,35)
+output.Size = UDim2.new(1,-16,1,-75)
 output.BackgroundTransparency = 1
 output.Font = Enum.Font.Code
-output.TextSize = 16
-output.TextColor3 = Color3.new(1,1,1)
 output.TextXAlignment = Enum.TextXAlignment.Left
 output.TextYAlignment = Enum.TextYAlignment.Top
-output.TextWrapped = true
-output.Text = ""
+output.TextColor3 = Color3.fromRGB(0,255,0)
+output.TextSize = 16
+output.TextWrapped = false
+output.RichText = false
+output.Text = [[
+Microsoft Windows [Version 11.0.22631.1]
+(c) Roblox Corporation. All rights reserved.
 
-local input = Instance.new("TextBox", frame)
-input.Size = UDim2.new(1,-10,0,30)
-input.Position = UDim2.new(0,5,1,-35)
-input.BackgroundColor3 = Color3.fromRGB(10,10,10)
+Type "?" for commands.
+]]
+
+local input = Instance.new("TextBox")
+input.Parent = frame
+input.Position = UDim2.new(0,8,1,-32)
+input.Size = UDim2.new(1,-16,0,24)
+input.BackgroundColor3 = Color3.fromRGB(18,18,18)
+input.BorderSizePixel = 0
 input.Font = Enum.Font.Code
+input.TextColor3 = Color3.fromRGB(255,255,255)
 input.TextSize = 16
-input.TextColor3 = Color3.new(1,1,1)
 input.ClearTextOnFocus = false
 
 local function prompt()
-	return "C:\\Users\\NUL\\"..player.Name.."> "
-end
-
-local function append(text)
-	output.Text = output.Text .. "\n" .. text
+	return ""
 end
 
 input.Text = prompt()
 
-input:GetPropertyChangedSignal("Text"):Connect(function()
-	if not input.Text:find(prompt(), 1, true) then
-		input.Text = prompt()
+local function append(txt,isCommand)
+	if isCommand then
+		output.Text = output.Text .. "\n\nCOM://USER/"..player.Name.." > " .. txt
+	else
+		output.Text = output.Text .. "\n" .. txt
 	end
-end)
-
-local function getUSTime()
-	return os.date("US timeline - %H:%M:%S", os.time() - (60*60*13))
-end
-
-local function getLocalTime()
-	return os.date("%Z timeline - %H:%M:%S")
-end
-
-local highlights = {}
-local healthTags = {}
-
-local function highlightPlayers(showHealth)
-	for _, plr in pairs(game.Players:GetPlayers()) do
-		if plr ~= player and plr.Character then
-			local h = Instance.new("Highlight")
-			h.FillColor = Color3.new(1,0,0)
-			h.Parent = plr.Character
-			table.insert(highlights, h)
-			if showHealth then
-				local bill = Instance.new("BillboardGui", plr.Character)
-				bill.Size = UDim2.new(0,100,0,40)
-				bill.AlwaysOnTop = true
-				local txt = Instance.new("TextLabel", bill)
-				txt.Size = UDim2.new(1,0,1,0)
-				txt.BackgroundTransparency = 1
-				txt.TextColor3 = Color3.new(1,0,0)
-				txt.Font = Enum.Font.Code
-				txt.Text = "HP: "..plr.Character:FindFirstChild("Humanoid").Health
-				table.insert(healthTags, bill)
-			end
-		end
-	end
-end
-
-local function clearHighlights()
-	for _, h in pairs(highlights) do h:Destroy() end
-	for _, h in pairs(healthTags) do h:Destroy() end
-	highlights = {}
-	healthTags = {}
 end
 
 local airjump = false
-game:GetService("UserInputService").JumpRequest:Connect(function()
-	if airjump then
-		humanoid:ChangeState("Jumping")
+local noclip = false
+local shaders = false
+local dragging = true
+local predicting = false
+
+local highlights = {}
+local predictionParts = {}
+
+player.CharacterAdded:Connect(function(c)
+	char = c
+	humanoid = c:WaitForChild("Humanoid")
+end)
+
+UIS.JumpRequest:Connect(function()
+	if airjump and humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 	end
 end)
 
-local noclip = false
-game:GetService("RunService").Stepped:Connect(function()
+RunService.Stepped:Connect(function()
 	if noclip and char then
-		for _, v in pairs(char:GetDescendants()) do
+		for _,v in ipairs(char:GetDescendants()) do
 			if v:IsA("BasePart") then
 				v.CanCollide = false
 			end
@@ -107,155 +108,419 @@ game:GetService("RunService").Stepped:Connect(function()
 	end
 end)
 
-local predicting = false
-local predictionLines = {}
+local draggingNow = false
+local dragInput
+local dragStart
+local startPos
 
-local function createLine(fromPos, toPos)
-	local part = Instance.new("Part")
-	part.Anchored = true
-	part.CanCollide = false
-	part.Size = Vector3.new(0.1,0.1,(fromPos - toPos).Magnitude)
-	part.CFrame = CFrame.lookAt(fromPos, toPos) * CFrame.new(0,0,-part.Size.Z/2)
-	part.Color = Color3.new(0,1,0)
-	part.Parent = workspace
-	return part
+local function update(inputObj)
+	local delta = inputObj.Position - dragStart
+
+	frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
 end
 
-local function startPrediction()
-	predicting = true
-	task.spawn(function()
-		while predicting do
-			for _, plr in pairs(game.Players:GetPlayers()) do
-				if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-					local root = plr.Character.HumanoidRootPart
-					local futurePos = root.Position + root.Velocity * 1
-					local line = createLine(root.Position, futurePos)
-					table.insert(predictionLines, line)
-					task.delay(0.5, function()
-						if line then line:Destroy() end
-					end)
-				end
-			end
-			task.wait(0.5)
-		end
-	end)
-end
-
-local function stopPrediction()
-	predicting = false
-	for _, l in pairs(predictionLines) do
-		if l then l:Destroy() end
+topbar.InputBegan:Connect(function(inputObj)
+	if not dragging then
+		return
 	end
-	predictionLines = {}
-end
 
-local draggingEnabled = false
-local dragging = false
-local dragInput, dragStart, startPos
-
-frame.InputBegan:Connect(function(inputObj)
-	if draggingEnabled and inputObj.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
+	if inputObj.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingNow = true
 		dragStart = inputObj.Position
 		startPos = frame.Position
+
 		inputObj.Changed:Connect(function()
 			if inputObj.UserInputState == Enum.UserInputState.End then
-				dragging = false
+				draggingNow = false
 			end
 		end)
 	end
 end)
 
-frame.InputChanged:Connect(function(inputObj)
+topbar.InputChanged:Connect(function(inputObj)
 	if inputObj.UserInputType == Enum.UserInputType.MouseMovement then
 		dragInput = inputObj
 	end
 end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(inputObj)
-	if inputObj == dragInput and dragging then
-		local delta = inputObj.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
+UIS.InputChanged:Connect(function(inputObj)
+	if inputObj == dragInput and draggingNow then
+		update(inputObj)
 	end
 end)
 
-local function runCommand(cmd)
-	if cmd == ">>help" then
-		append("Commands loaded.")
-	elseif cmd == "-h //" then
-		highlightPlayers(false)
-		append("Highlight enabled.")
-	elseif cmd == "-h /h" then
-		highlightPlayers(true)
-		append("Highlight + health enabled.")
-	elseif cmd == "-e -h--" then
-		clearHighlights()
-		append("Highlight disabled.")
-	elseif cmd:match("%-s %-%-(%d+)&") then
-		local num = tonumber(cmd:match("(%d+)"))
-		humanoid.WalkSpeed = num
-		append("Speed set: "..num)
-	elseif cmd == "-s --re" then
-		humanoid.WalkSpeed = 16
-		append("Speed reset.")
-	elseif cmd:match("%-j %-%-(%d+)&") then
-		local num = tonumber(cmd:match("(%d+)"))
-		humanoid.JumpPower = num
-		append("Jump set: "..num)
-	elseif cmd == "-j --re" then
-		humanoid.JumpPower = 50
-		append("Jump reset.")
-	elseif cmd == "-airjump--/" then
-		airjump = true
-		append("Airjump enabled.")
-	elseif cmd == "--ncL" then
-		noclip = true
-		append("Noclip enabled.")
-	elseif cmd == "--ncL--re" then
-		noclip = false
-		append("Noclip disabled.")
-	elseif cmd == "-Sp" then
-		local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
-		append("Ping: "..ping)
-	elseif cmd == "-te.." then
-		for _, t in pairs(game:GetService("Teams"):GetChildren()) do
-			append("Team: "..t.Name)
+local function clearHighlights()
+	for _,v in ipairs(highlights) do
+		if v then
+			v:Destroy()
 		end
-	elseif cmd == "-watch-t" then
-		append(getUSTime())
-	elseif cmd == "-watch-t-y" then
-		append(getLocalTime())
-	elseif cmd == "-cors watch/" then
-		startPrediction()
-		append("Prediction ON")
-	elseif cmd == "-cors /" then
-		stopPrediction()
-		append("Prediction OFF")
-	elseif cmd == "-d -on" then
-		draggingEnabled = true
-		append("Dragging ON")
-	elseif cmd == "-d -off" then
-		draggingEnabled = false
-		append("Dragging OFF")
-	elseif cmd == "--/clearterminal" then
-		output.Text = ""
-	elseif cmd == "--{}" then
-		player:Kick("Error!(js, python)")
-	else
-		append("Unknown command.")
+	end
+
+	highlights = {}
+end
+
+local function highlightPlayers(showHealth)
+	clearHighlights()
+
+	for _,plr in ipairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character then
+
+			local h = Instance.new("Highlight")
+			h.FillColor = Color3.fromRGB(255,0,0)
+			h.OutlineColor = Color3.fromRGB(255,255,255)
+			h.Parent = plr.Character
+
+			table.insert(highlights,h)
+
+			if showHealth then
+				local bill = Instance.new("BillboardGui")
+				bill.Size = UDim2.new(0,100,0,40)
+				bill.AlwaysOnTop = true
+				bill.Parent = plr.Character:FindFirstChild("Head")
+
+				local txt = Instance.new("TextLabel")
+				txt.Parent = bill
+				txt.Size = UDim2.new(1,0,1,0)
+				txt.BackgroundTransparency = 1
+				txt.Font = Enum.Font.Code
+				txt.TextColor3 = Color3.fromRGB(0,255,0)
+				txt.Text = "HP: "..math.floor(plr.Character.Humanoid.Health)
+
+				table.insert(highlights,bill)
+			end
+		end
 	end
 end
 
-input.FocusLost:Connect(function(enter)
-	if enter then
-		local text = input.Text:sub(#prompt() + 1)
-		append(prompt() .. text)
-		runCommand(text)
-		input.Text = prompt()
+local function predictionOn()
+	predicting = true
+
+	task.spawn(function()
+		while predicting do
+			for _,plr in ipairs(Players:GetPlayers()) do
+				if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+
+					local root = plr.Character.HumanoidRootPart
+					local pos = root.Position + root.Velocity
+
+					local part = Instance.new("Part")
+					part.Anchored = true
+					part.CanCollide = false
+					part.Size = Vector3.new(1,1,1)
+					part.Shape = Enum.PartType.Ball
+					part.Material = Enum.Material.Neon
+					part.Color = Color3.fromRGB(0,255,0)
+					part.Position = pos
+					part.Parent = workspace
+
+					table.insert(predictionParts,part)
+
+					task.delay(0.5,function()
+						if part then
+							part:Destroy()
+						end
+					end)
+				end
+			end
+
+			task.wait(0.3)
+		end
+	end)
+end
+
+local function predictionOff()
+	predicting = false
+
+	for _,v in ipairs(predictionParts) do
+		if v then
+			v:Destroy()
+		end
 	end
+
+	predictionParts = {}
+end
+
+local bloom = Instance.new("BloomEffect")
+local colorCorrection = Instance.new("ColorCorrectionEffect")
+
+local function shadersOn()
+	shaders = true
+
+	bloom.Intensity = 1
+	bloom.Size = 24
+	bloom.Parent = Lighting
+
+	colorCorrection.Contrast = 0.15
+	colorCorrection.Saturation = 0.25
+	colorCorrection.Parent = Lighting
+
+	append("Shaders enabled.")
+end
+
+local function shadersOff()
+	shaders = false
+
+	bloom.Parent = nil
+	colorCorrection.Parent = nil
+
+	append("Shaders disabled.")
+end
+
+local function antiLag()
+	for _,v in ipairs(workspace:GetDescendants()) do
+
+		if v:IsA("ParticleEmitter")
+		or v:IsA("Trail")
+		or v:IsA("Smoke")
+		or v:IsA("Fire")
+		or v:IsA("Sparkles") then
+
+			v.Enabled = false
+		end
+
+		if v:IsA("BasePart") then
+			v.Material = Enum.Material.Plastic
+			v.Reflectance = 0
+		end
+	end
+
+	Lighting.GlobalShadows = false
+	Lighting.FogEnd = 100000
+
+	append("Anti-lag optimization complete.")
+end
+
+local commands = {
+
+	["?"] = "Show all commands",
+	["clear"] = "Clear terminal",
+	["exit"] = "Close terminal",
+
+	["speed <num>"] = "Set walkspeed",
+	["speed reset"] = "Reset walkspeed",
+
+	["jump <num>"] = "Set jump power",
+	["jump reset"] = "Reset jump power",
+
+	["airjump on"] = "Enable airjump",
+	["airjump off"] = "Disable airjump",
+
+	["noclip on"] = "Enable noclip",
+	["noclip off"] = "Disable noclip",
+
+	["highlight on"] = "Highlight players",
+	["highlight health"] = "Highlight + HP",
+	["highlight off"] = "Disable highlights",
+
+	["ping"] = "Show ping",
+	["fps"] = "Show FPS estimate",
+	["time"] = "Show local time",
+
+	["teams"] = "List teams",
+	["players"] = "List players",
+
+	["predict on"] = "Enable prediction",
+	["predict off"] = "Disable prediction",
+
+	["drag on"] = "Enable dragging",
+	["drag off"] = "Disable dragging",
+
+	["rejoin"] = "Rejoin current server",
+	["reset"] = "Reset character",
+
+	["sit"] = "Sit character",
+	["jumpnow"] = "Force jump",
+
+	["zoom <num>"] = "Set camera zoom",
+	["fov <num>"] = "Set camera FOV",
+
+	["shader on"] = "Enable shaders",
+	["shader off"] = "Disable shaders",
+
+	["--antilag"] = "Optimize graphics for performance",
+
+	["day"] = "Set daytime",
+	["night"] = "Set nighttime",
+
+	["gravity <num>"] = "Set workspace gravity",
+
+	["cmds"] = "Alias for ?"
+}
+
+local function showCommands()
+	append("")
+	append("========== COMMAND LIST ==========")
+
+	for cmd,desc in pairs(commands) do
+		append(cmd .. " -> " .. desc)
+	end
+
+	append("==================================")
+end
+
+local function runCommand(cmd)
+
+	local lower = string.lower(cmd)
+
+	if lower == "?" or lower == "cmds" then
+		showCommands()
+
+	elseif lower == "clear" then
+		output.Text = ""
+
+	elseif lower == "exit" then
+		gui:Destroy()
+
+	elseif lower:match("^speed (%d+)$") then
+		local n = tonumber(lower:match("%d+"))
+		humanoid.WalkSpeed = n
+		append("WalkSpeed set to "..n)
+
+	elseif lower == "speed reset" then
+		humanoid.WalkSpeed = 16
+		append("WalkSpeed reset.")
+
+	elseif lower:match("^jump (%d+)$") then
+		local n = tonumber(lower:match("%d+"))
+		humanoid.JumpPower = n
+		append("JumpPower set to "..n)
+
+	elseif lower == "jump reset" then
+		humanoid.JumpPower = 50
+		append("JumpPower reset.")
+
+	elseif lower == "airjump on" then
+		airjump = true
+		append("Airjump enabled.")
+
+	elseif lower == "airjump off" then
+		airjump = false
+		append("Airjump disabled.")
+
+	elseif lower == "noclip on" then
+		noclip = true
+		append("Noclip enabled.")
+
+	elseif lower == "noclip off" then
+		noclip = false
+		append("Noclip disabled.")
+
+	elseif lower == "highlight on" then
+		highlightPlayers(false)
+		append("Highlight enabled.")
+
+	elseif lower == "highlight health" then
+		highlightPlayers(true)
+		append("Highlight health enabled.")
+
+	elseif lower == "highlight off" then
+		clearHighlights()
+		append("Highlights cleared.")
+
+	elseif lower == "ping" then
+		local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValueString()
+		append("Ping: "..ping)
+
+	elseif lower == "fps" then
+		append("FPS estimate: "..math.floor(1 / RunService.RenderStepped:Wait()))
+
+	elseif lower == "time" then
+		append(os.date("%X"))
+
+	elseif lower == "teams" then
+		for _,t in ipairs(game:GetService("Teams"):GetChildren()) do
+			append("Team: "..t.Name)
+		end
+
+	elseif lower == "players" then
+		for _,p in ipairs(Players:GetPlayers()) do
+			append("Player: "..p.Name)
+		end
+
+	elseif lower == "predict on" then
+		predictionOn()
+		append("Prediction enabled.")
+
+	elseif lower == "predict off" then
+		predictionOff()
+		append("Prediction disabled.")
+
+	elseif lower == "drag on" then
+		dragging = true
+		append("Dragging enabled.")
+
+	elseif lower == "drag off" then
+		dragging = false
+		append("Dragging disabled.")
+
+	elseif lower == "reset" then
+		char:BreakJoints()
+
+	elseif lower == "sit" then
+		humanoid.Sit = true
+
+	elseif lower == "jumpnow" then
+		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+	elseif lower == "rejoin" then
+		game:GetService("TeleportService"):Teleport(game.PlaceId,player)
+
+	elseif lower:match("^zoom (%d+)$") then
+		local n = tonumber(lower:match("%d+"))
+		player.CameraMaxZoomDistance = n
+		append("Zoom set to "..n)
+
+	elseif lower:match("^fov (%d+)$") then
+		local n = tonumber(lower:match("%d+"))
+		workspace.CurrentCamera.FieldOfView = n
+		append("FOV set to "..n)
+
+	elseif lower == "shader on" then
+		shadersOn()
+
+	elseif lower == "shader off" then
+		shadersOff()
+
+	elseif lower == "--antilag" then
+		antiLag()
+
+	elseif lower == "day" then
+		Lighting.ClockTime = 14
+		append("Daytime set.")
+
+	elseif lower == "night" then
+		Lighting.ClockTime = 0
+		append("Nighttime set.")
+
+	elseif lower:match("^gravity (%d+)$") then
+		local n = tonumber(lower:match("%d+"))
+		workspace.Gravity = n
+		append("Gravity set to "..n)
+
+	else
+		append("'"..cmd.."' is not recognized as a command.")
+	end
+end
+
+input.FocusLost:Connect(function(enterPressed)
+
+	if not enterPressed then
+		return
+	end
+
+	local txt = input.Text
+
+	append(txt,true)
+
+	runCommand(txt)
+
+	input.Text = ""
 end)
+
+append("")
+append("Terminal initialized successfully.")
